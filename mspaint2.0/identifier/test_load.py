@@ -82,19 +82,12 @@ finger_height = -1
 finger_width = []
 if bottom and not left and not right and not top:
 
-
     for i in range(height):
         row = bw[i]
         if 0 in row:
             finger_height = i
             finger_width = np.median(np.where(row == 0))
             break
-
-
-    print(finger_height)
-    print(finger_width)
-
-    
 
     
 elif left and not right and not top and not bottom:
