@@ -5,12 +5,12 @@ import numpy as np
 import time
 
 
-#hand = cv2.imread('point_up.jpg', 2)
-#hand = cv2.imread('point_right.jpg', 2)
-#hand = cv2.imread('point_left.jpg', 2)
-#hand = cv2.imread('point_down.jpg', 2)
-#hand = cv2.imread('point_down.jpg', 2)
-hand = cv2.imread('down_left_easy.jpg', 2)
+#hand = cv2.imread('testImages/point_up.jpg', 2)
+#hand = cv2.imread('testImages/point_right.jpg', 2)
+#hand = cv2.imread('testImages/point_left.jpg', 2)
+#hand = cv2.imread('testImages/point_down.jpg', 2)
+#hand = cv2.imread('testImages/point_down.jpg', 2)
+hand = cv2.imread('testImages/down_left_easy.jpg', 2)
 
 
 
@@ -36,11 +36,7 @@ top = False
 right = False
 bottom = False
 
-
 sides = {"top": [], "bottom": [], "left": [], "right": []}
-
-
-
 
 #top border
 topP = 0
@@ -50,6 +46,7 @@ leftP = 0
 rightP = width - 1
 
 
+# Go around border and collect active pixels touching edge of image
 
 for i in range(width):
    
