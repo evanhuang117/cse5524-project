@@ -42,15 +42,17 @@ class Tracker:
                 region1 = next[r-offset:r+offset+1, c-offset:c+offset+1]
                 # filter out border of region_size/2 around the image
                 if region0.size >= self.region_size ** 2 and region1.size >= self.region_size ** 2:
-                    f = self.flow2(region0, region1)
+                    flow_res = self.flow2(region0, region1)
                     # flow is none if we can't invert a mat
-                    if f is not None:
-                        # add the flow vector to the prev r,c to find the updated pos.
-                        new_point = (r+f[0], c+f[1])
-                        if new_point[0] < curr.shape[0] and new_point[1] < curr.shape[1]:
-                            # add updated r, c and flow vector to array of all flows
-                            flows[i] = np.insert(f, 0, [r, c])
-                            self.feature_points[i] = new_point
+                    if flow_res:
+                        f, mag = flow_res
+                        if np.linalg.norm(f) < np.linalg.norm(mag):
+                            # add the flow vector to the prev r,c to find the updated pos.
+                            new_point = (r+f[0], c+f[1])
+                            if new_point[0] < curr.shape[0] and new_point[1] < curr.shape[1]:
+                                # add updated r, c and flow vector to array of all flows
+                                flows[i] = np.insert(f, 0, [r, c])
+                                self.feature_points[i] = new_point
             return flows
         raise StopIteration()
 
@@ -58,31 +60,32 @@ class Tracker:
     find features to track based off first 2 frames using mei
     filters out the points so that there's only one per region of size region_size
     """
+
     def gen_feature_points(self, threshold):
-            mei = np.abs(self.input[1] - self.input[0])
-            mei = mei > threshold
-            mei = scipy.ndimage.binary_opening(mei)
-            mei = scipy.ndimage.binary_closing(mei)
-            mei = np.argwhere(mei)
-            print(mei.shape)
-            mei_filtered = []
-            for p in mei:
-                # filter out points based on euclidean dist. between them
-                if not mei_filtered or \
-                        ((p[0]-mei_filtered[-1][0])**2 + (p[1]-mei_filtered[-1][1])**2)**.5 >= self.region_size:
-                    mei_filtered.append(p)
-            print(len(mei_filtered))
-            return np.array(mei_filtered)
+        mei = np.abs(self.input[1] - self.input[0])
+        mei = mei > threshold
+        mei = scipy.ndimage.binary_opening(mei)
+        mei = scipy.ndimage.binary_closing(mei)
+        mei = np.argwhere(mei)
+        print(mei.shape)
+        mei_filtered = []
+        for p in mei:
+            # filter out points based on euclidean dist. between them
+            if not mei_filtered or \
+                    ((p[0]-mei_filtered[-1][0])**2 + (p[1]-mei_filtered[-1][1])**2)**.5 >= self.region_size:
+                mei_filtered.append(p)
+        print(len(mei_filtered))
+        return np.array(mei_filtered)
 
     def flow(self, patch0, patch1):
         patch0 = patch0
         patch1 = patch1
         Gx = np.array([[-1, 0, 1],
-                    [-2, 0, 2],
-                    [-1, 0, 1]]) / 8
+                       [-2, 0, 2],
+                       [-1, 0, 1]]) / 8
         Gy = np.array([[-1, -2, -1],
-                    [0, 0, 0],
-                    [1, 2, 1]]) / 8
+                       [0, 0, 0],
+                       [1, 2, 1]]) / 8
 
         fx = cv2.filter2D(patch1.astype(np.float32), -1, Gx)
         fy = cv2.filter2D(patch1.astype(np.float32), -1, Gy)
@@ -97,19 +100,19 @@ class Tracker:
         # patch0 = rgb2gray(patch0)
         # patch1 = rgb2gray(patch1)
         Gx = np.array([[-1, 0, 1],
-                    [-2, 0, 2],
-                    [-1, 0, 1]]) / 8
+                       [-2, 0, 2],
+                       [-1, 0, 1]]) / 8
         Gy = np.array([[-1, -2, -1],
-                    [0, 0, 0],
-                    [1, 2, 1]]) / 8
+                       [0, 0, 0],
+                       [1, 2, 1]]) / 8
 
         fx = cv2.filter2D(patch1.astype(np.float32), -1,
-                        Gx).reshape((patch1.size, 1))
+                          Gx).reshape((patch1.size, 1))
         fy = cv2.filter2D(patch1.astype(np.float32), -1,
-                        Gy).reshape((patch1.size, 1))
+                          Gy).reshape((patch1.size, 1))
         ft = -(patch1-patch0).reshape((patch1.size, 1))
         a = np.hstack((fx, fy))
-        try: # in case the matrix isn't invertible
-            return (np.linalg.inv(a.T @ a) @ a.T @ ft).reshape(2)
+        try:  # in case the matrix isn't invertible
+            return (np.linalg.inv(a.T @ a) @ a.T @ ft).reshape(2), ft
         except:
             return None
