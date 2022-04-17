@@ -6,7 +6,10 @@ from scipy.ndimage import gaussian_filter, laplace
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from math import ceil, floor,  pi, sqrt
-
+import imageio as iio
+from PIL import Image
+from skimage import color
+from skimage import io
 
 
 class Whiteboard:
@@ -48,39 +51,51 @@ class Whiteboard:
     def __interestPoints__(self,videodata):
         
         arr = []
-        for x in range(len(videodata)): # for each image 
-            temp = np.pad(videodata[x], ((0,840),(0,0)), 'constant') 
-            blur = cv2.GaussianBlur(temp,(3, 3), 3)
+        #for x in range(len(videodata)): # for each image 
+        temp = np.pad(videodata, ((0,233),(0,0)), 'constant') 
+        temp = Gaussianblurredx = cv2.GaussianBlur(temp, (5,5), 1)
+        # (plt.imshow( temp))
+        # plt.show()
+            #blur = cv2.GaussianBlur(temp,(3, 3), 3)
                     
             # image_first_derivative = laplace(temp) # first derivative of image 
             # image_first_derivative2 = laplace(temp) # second derivative of an image
-            image_first_derivative = laplace(temp) # first derivative of image 
-            image_first_derivative2 = laplace(temp)
+        image_first_derivative = gaussian_filter(temp,sigma=1,order=[1,0],output=np.float64, mode='nearest') # first derivative of image 
+        
+       
+        image_first_derivative2 = gaussian_filter(temp,sigma=1,order=[0,1],output=np.float64, mode='nearest')
+        # image_first_derivative = laplace(videodata) # first derivative of image 
+        # image_first_derivative2 = laplace(videodata)
 
-            Gx2 = np.matmul(image_first_derivative,image_first_derivative);
-            Gy2 = np.matmul(image_first_derivative2,image_first_derivative2);
-            GxGy = np.matmul(image_first_derivative,image_first_derivative2);
-            Gaussianblurredx = cv2.GaussianBlur(Gx2, (3, 3), 1)
-            Gaussianblurredy = cv2.GaussianBlur(Gy2, (3, 3), 1)
-            Gaussianblurredxy = cv2.GaussianBlur(GxGy, (3, 3), 1)
-            addedm = Gaussianblurredxy+Gaussianblurredxy
-            R  = np.matmul(Gaussianblurredx,Gaussianblurredy) - np.matmul(Gaussianblurredxy,Gaussianblurredxy) - (0.05*np.matmul(addedm,addedm)) 
-            R = R*-1
+        Gx2 = np.matmul(image_first_derivative,image_first_derivative);
+        Gy2 = np.matmul(image_first_derivative2,image_first_derivative2);
+        GxGy = np.matmul(image_first_derivative,image_first_derivative2);
+        Gaussianblurredx = cv2.GaussianBlur(Gx2, (5, 5), cv2.BORDER_CONSTANT)
+        Gaussianblurredy = cv2.GaussianBlur(Gy2, (5, 5), cv2.BORDER_CONSTANT)
+        Gaussianblurredxy = cv2.GaussianBlur(GxGy, (5, 5),cv2.BORDER_CONSTANT)
+        addedm = Gaussianblurredx+Gaussianblurredy
+        R  = (Gaussianblurredx @ Gaussianblurredy) - (Gaussianblurredxy@Gaussianblurredxy) - (2*(addedm @ addedm))
+        R = R*-1
 
+        
+        threshold = R > 10e7
+        #threshold = R>7
+        (plt.imshow(threshold))
+        plt.show()
+        exit
+        arr.append(R)
             
-            threshold = R > 2.5e6
-            #threshold = R>0 
-            (plt.imshow(threshold))
-            plt.show()
-            exit
-            arr.append(R)
-            
-        return arr
+        # return arr
+        return R
 
-vid = np.squeeze(skvideo.utils.rgb2gray(skvideo.io.vread("C:\\Users\\Jaiydev Gupta\\Documents\\5524 project\\cse5524-project\\data\\up_move_right_Trim.mp4")));
-whiteboard = Whiteboard(vid)
-(plt.imshow(whiteboard.Rstore[0]))
-plt.show()
+# vid = np.squeeze(skvideo.utils.rgb2gray(skvideo.io.vread("C:\\Users\\Jaiydev Gupta\\Documents\\5524 project\\cse5524-project\\data\\up_move_right_Trim.mp4")));
+img = io.imread('C:\\Users\\Jaiydev Gupta\\Documents\\5524 project\\cse5524-project\\data\\angle_left.png')
+imgGray = cv2.imread('C:\\Users\\Jaiydev Gupta\\Documents\\5524 project\\cse5524-project\\data\\angle_left.png',0)
+#imgGray = color.rgb2gray(img)
+print(imgGray.shape)
+whiteboard = Whiteboard(imgGray)
+# (plt.imshow(whiteboard.Rstore))
+# plt.show()
     
     
         

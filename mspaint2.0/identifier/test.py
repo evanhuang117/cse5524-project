@@ -1,7 +1,9 @@
 import cv2
 from cv2 import threshold
 import numpy as np
-
+#from whiteboard import Whiteboard
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 
 class Tracker():
 
@@ -64,15 +66,23 @@ if __name__ == "__main__":
 			
 			im_bw = cv2.threshold(cut_frame, threshold, 255, cv2.THRESH_BINARY)[1]
 
+			print(im_bw.shape)
+   
 
 
 
 			cv2.imshow('bin', im_bw)
+			#whiteboard = Whiteboard(im_bw)
+			# plt.imshow(whiteboard.Rstore)
+			# plt.show()
 
 
 		# Display the resulting frame
 		cv2.line(c_frame, (line_x, -10), (line_x, height + 10), (0, 255, 0), thickness=3)
 		cv2.imshow('frame', c_frame)
+		
+		
+  
 
 
 
