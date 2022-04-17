@@ -16,7 +16,7 @@ import math
 
 #vid = np.squeeze(skvideo.utils.rgb2gray(skvideo.io.vread("C:\\Users\\Jaiydev Gupta\\Documents\\5524 project\\cse5524-project\\data\\up_move_right_Trim.mp4")));
 
-vid = cv2.VideoCapture("C:\\Users\\Jaiydev Gupta\\Documents\\5524 project\\cse5524-project\\data\\up_move_right_Trim.mp4")
+vid = cv2.VideoCapture("C:\\Users\\Jaiydev Gupta\\Documents\\5524 project\\cse5524-project\\data\\up_move_right_Trim_little.mp4")
 # Check if camera opened successfully
 if (vid.isOpened()== False): 
   print("Error opening video stream or file")
@@ -51,6 +51,9 @@ while(vid.isOpened()):
     centerx = 960
     arr = []
     im_bw = im_bw/255;
+    (plt.imshow( sobelx))
+  
+    plt.show()
     
     
     for y in range(len(im_bw)):
@@ -75,7 +78,7 @@ while(vid.isOpened()):
         
  
             
-    if count == 6:            
+    if count == 20:            
         (plt.imshow( im_bw))
         plt.plot(loc[1], loc[0], marker="o", markersize=20, markeredgecolor="red", markerfacecolor="green")
         plt.show()
