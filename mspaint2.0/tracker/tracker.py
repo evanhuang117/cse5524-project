@@ -1,11 +1,6 @@
-import typing
-from unicodedata import ucd_3_2_0
 import numpy as np
-import skvideo.io
 import matplotlib.pyplot as plt
 import cv2
-from skimage.color import rgb2gray
-from cv2 import COLOR_RGB2GRAY
 import scipy
 import math
 
@@ -61,6 +56,11 @@ class Tracker:
         raise StopIteration()
 
     def update_frames(self):
+        """
+            using the input BGR video from cv2, updates the current and next
+            frame to the grayscale frames, scaled according to self.rescale
+            returns false when the last frame has been read
+        """
         # for some reason uint8 breaks everything so need to divide
         _, self.curr_frame = self.input.read()
         self.curr_frame = cv2.cvtColor(
@@ -80,12 +80,12 @@ class Tracker:
             self.next_frame, dim, interpolation=cv2.INTER_AREA)
         return successful_read
 
-    """
-    find features to track based off first 2 frames using mei
-    filters out the points so that there's only one per region of size region_size
-    """
 
     def gen_feature_points(self, threshold):
+        """
+        find features to track based off first 2 frames using mei
+        filters out the points so that there's only one per region of size region_size
+        """
         mei = np.abs(self.next_frame - self.curr_frame)
         mei = mei > threshold
         mei = scipy.ndimage.binary_opening(mei)
