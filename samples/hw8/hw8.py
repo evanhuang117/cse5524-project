@@ -43,7 +43,7 @@ def cov(region, mu, r, c):
 # %%
 
 
-checker = plt.imread('checker.png')*255
+checker =cv2.imread('C:\\Users\\Jaiydev Gupta\\Documents\\5524 project\\cse5524-project\\data\\angle_left.png',0)
 alpha = 0.05
 dx, dy = gaussDeriv2D(0.7)
 
@@ -51,7 +51,9 @@ ix = cv2.filter2D(checker, -1, dx)
 iy = cv2.filter2D(checker, -1, dy)
 
 ix2 = np.square(ix)
+print(len(ix2.shape))
 iy2 = np.square(iy)
+print(len(iy2))
 ixiy = ix @ iy
 
 gx = cv2.GaussianBlur(ix2, (3, 3), 1)

@@ -116,3 +116,7 @@ class Tracker:
             return (np.linalg.inv(a.T @ a) @ a.T @ ft).reshape(2), ft
         except:
             return None
+#video = np.squeeze(skvideo.utils.rgb2gray(skvideo.io.vread('C:\\Users\\Jaiydev Gupta\\Documents\\5524 project\\cse5524-project\\data\\up_move_right.mp4'))/255)
+#video = np.squeeze(skvideo.io.vread('C:\Users\Jaiydev Gupta\Documents\5524 project\cse5524-project\data')/255);
+#print(video.shape)
+#Tracker(video, threshold=0.1, region_size=15)
