@@ -33,13 +33,13 @@ def scale_frame(frame, scale):
     return cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
 
 
-def track_regions(curr_frame, next_frame, scale=0.5, regions=None):
+def track_regions(curr_frame, next_frame, regions, scale=0.5):
     """
         run KLT tracking on a region in a scaled down version of the video then 
         upscale it to the original image size. input images are assumed to be CV2 (BGR)
 
-        :param scale: amount that each frame is scaled down to run KLT tracking on, improves detection of small movements
         :param regions: array of tuples of (r, c, region_size) to track
+        :param scale: amount that each frame is scaled down to run KLT tracking on, improves detection of small movements
 
     """
     # convert to grayscale if needed
