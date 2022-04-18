@@ -8,6 +8,13 @@ import math
 
 class Tracker:
     def __init__(self, input_video, threshold=0.05, region_size=9, scale=0.5, regions=None):
+        """
+            :param input_video: the video to process, cv2 VideoCapture object
+            :param threshold: threshold value for img diff interest points detection 
+            :param region_size: region_size x region_size window in which KLT is run for each interest point
+            :param scale: amount that each frame is scaled down to run KLT tracking on, improves detection of small movements
+            :param regions: array of tuples of (r, c, region_size) - if this is not None, KLT tracking will be run on each region
+        """
         self.input = input_video
         self.region_size = region_size
         self.scale = scale
