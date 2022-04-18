@@ -34,7 +34,7 @@ def downscale(frame, scale):
 
 def track_regions(curr_frame, next_frame, regions, tracking_scale=0.5):
     """
-        run KLT tracking on a region in a scaled down version of the video then 
+        run KLT tracking on a region in a scaled down version of the video then
         upscale it to the original image size. input images are assumed to be CV2 (BGR)
 
         :param regions: array of tuples of (r, c, region_size) to track
@@ -63,13 +63,13 @@ def track_regions(curr_frame, next_frame, regions, tracking_scale=0.5):
             f_upscale = f / tracking_scale
             # add the scaled flow vector to the current r,c to find the updated pos. in the
             # original scale image
-            new_point = (int(round(r+f_upscale[0])),
-                         int(round(c+f_upscale[1])))
+            new_r = int(round(r+f_upscale[0]))
+            new_c = int(round(c+f_upscale[1]))
             # make sure the new point is actually inside the image
-            if new_point[0] < curr_frame.shape[0] and new_point[0] >= 0 \
-                    and new_point[1] < curr_frame.shape[1] and new_point[1] >= 0:
+            if new_r < curr_frame.shape[0] and new_r >= 0 \
+                    and new_c < curr_frame.shape[1] and new_c >= 0:
                 # update position for the region
-                new_regions[i] = (*new_point, win_size)
+                new_regions[i] = (new_r, new_c, win_size)
     return new_regions
 
 
@@ -77,7 +77,7 @@ class Tracker:
     def __init__(self, input_video, threshold=0.05, region_size=9, scale=0.5, regions=None):
         """
             :param input_video: the video to process, cv2 VideoCapture object
-            :param threshold: threshold value for img diff interest points detection 
+            :param threshold: threshold value for img diff interest points detection
             :param region_size: region_size x region_size window in which KLT is run for each interest point
             :param scale: amount that each frame is scaled down to run KLT tracking on, improves detection of small movements
             :param regions: array of tuples of (r, c, region_size) - if this is not None, KLT tracking will be run on each region
@@ -154,7 +154,7 @@ class Tracker:
 
     def track_region(self):
         """
-            run KLT tracking on a region in a scaled down version of the video then 
+            run KLT tracking on a region in a scaled down version of the video then
             upscale it to the original image size
 
         """
