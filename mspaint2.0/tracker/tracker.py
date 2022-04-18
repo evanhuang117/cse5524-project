@@ -6,6 +6,76 @@ import scipy.ndimage
 import math
 
 
+def flow(patch0, patch1):
+    Gx = np.array([[-1, 0, 1],
+                   [-2, 0, 2],
+                   [-1, 0, 1]]) / 8
+    Gy = np.array([[-1, -2, -1],
+                   [0, 0, 0],
+                   [1, 2, 1]]) / 8
+
+    fx = cv2.filter2D(patch1.astype(np.float32), -1,
+                      Gx).reshape((patch1.size, 1))
+    fy = cv2.filter2D(patch1.astype(np.float32), -1,
+                      Gy).reshape((patch1.size, 1))
+    ft = -(patch1-patch0).reshape((patch1.size, 1))
+    a = np.hstack((fx, fy))
+    try:  # in case the matrix isn't invertible
+        return (np.linalg.inv(a.T @ a) @ a.T @ ft).reshape(2), ft
+    except:
+        return None
+
+
+def scale_frame(frame, scale):
+    width = int(frame.shape[1] * scale)
+    height = int(frame.shape[0] * scale)
+    dim = (width, height)
+    return cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
+
+
+def track_regions(curr_frame, next_frame, scale=0.5, regions=None):
+    """
+        run KLT tracking on a region in a scaled down version of the video then 
+        upscale it to the original image size. input images are assumed to be CV2 (BGR)
+
+        :param scale: amount that each frame is scaled down to run KLT tracking on, improves detection of small movements
+        :param regions: array of tuples of (r, c, region_size) to track
+
+    """
+    # convert to grayscale if needed
+    if len(curr_frame.shape) == 3:
+        curr_frame = cv2.cvtColor(curr_frame, cv2.COLOR_BGR2GRAY)
+    if len(next_frame.shape) == 3:
+        next_frame = cv2.cvtColor(next_frame, cv2.COLOR_BGR2GRAY)
+
+    curr = scale_frame(curr_frame)
+    next = scale_frame(next_frame)
+    new_pos = regions.copy()
+    for i, (r, c, win_size) in enumerate(regions):
+        offset = int(math.floor(win_size/2) + win_size / 2)
+        region0 = curr[r-offset:r+offset+1, c-offset:c+offset+1]
+        region1 = next[r-offset:r+offset+1, c-offset:c+offset+1]
+        if region0.size >= win_size ** 2 and region1.size >= win_size ** 2:
+            flow_res = flow(region0, region1)
+            # flow is none if we can't invert a mat
+            if flow_res:
+                f, mag = flow_res
+                f_upscale = f / scale
+                # scale the r, c  up to the original size
+                r_upscale = r / scale
+                c_upscale = c / scale
+                # add the flow vector to the prev r,c to find the updated pos.
+                new_point = (int(np.ceil(r+f[0])),
+                             int(np.ceil(c+f[1])))
+                new_point_upscale = (int(np.ceil(r_upscale+f_upscale[0])),
+                                     int(np.ceil(c_upscale+f_upscale[1])))
+                if new_point[0] < curr.shape[0] and new_point[0] >= 0 \
+                        and new_point[1] < curr.shape[1] and new_point[1] >= 0:
+                    # update position for the region
+                    new_pos[i] = (*new_point_upscale, win_size)
+    return new_pos
+
+
 class Tracker:
     def __init__(self, input_video, threshold=0.05, region_size=9, scale=0.5, regions=None):
         """
