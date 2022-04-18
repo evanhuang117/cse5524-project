@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import cv2
 import scipy
 import scipy.ndimage
-import math
 
 
 def flow(patch0, patch1):
@@ -52,7 +51,7 @@ def track_regions(curr_frame, next_frame, regions, tracking_scale=0.5):
     new_pos = regions.copy()
     for i, (r, c, win_size) in enumerate(regions):
         # find the region around the point + a border
-        offset = int(math.round(win_size/2 + win_size / 2))
+        offset = int(round(win_size/2 + win_size / 2))
         region0 = curr_frame[r-offset:r+offset+1, c-offset:c+offset+1]
         region1 = next_frame[r-offset:r+offset+1, c-offset:c+offset+1]
         # calculate flow for the scaled down region
@@ -64,8 +63,8 @@ def track_regions(curr_frame, next_frame, regions, tracking_scale=0.5):
             f_upscale = f / tracking_scale
             # add the scaled flow vector to the current r,c to find the updated pos. in the
             # original scale image
-            new_point = (int(math.round(r+f_upscale[0])),
-                         int(math.round(c+f_upscale[1])))
+            new_point = (int(round(r+f_upscale[0])),
+                         int(round(c+f_upscale[1])))
             # make sure the new point is actually inside the image
             if new_point[0] < curr_frame.shape[0] and new_point[0] >= 0 \
                     and new_point[1] < curr_frame.shape[1] and new_point[1] >= 0:
