@@ -26,20 +26,20 @@ def flow(patch0, patch1):
         return None
 
 
-def scale_frame(frame, scale):
+def downscale(frame, scale):
     width = int(frame.shape[1] * scale)
     height = int(frame.shape[0] * scale)
     dim = (width, height)
     return cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
 
 
-def track_regions(curr_frame, next_frame, regions, scale=0.5):
+def track_regions(curr_frame, next_frame, regions, tracking_scale=0.5):
     """
         run KLT tracking on a region in a scaled down version of the video then 
         upscale it to the original image size. input images are assumed to be CV2 (BGR)
 
         :param regions: array of tuples of (r, c, region_size) to track
-        :param scale: amount that each frame is scaled down to run KLT tracking on, improves detection of small movements
+        :param tracking_scale: amount that each frame is scaled down to run KLT tracking on, improves detection of small movements
 
     """
     # convert to grayscale if needed
@@ -48,31 +48,29 @@ def track_regions(curr_frame, next_frame, regions, scale=0.5):
     if len(next_frame.shape) == 3:
         next_frame = cv2.cvtColor(next_frame, cv2.COLOR_BGR2GRAY)
 
-    curr = scale_frame(curr_frame)
-    next = scale_frame(next_frame)
+    # downscale images to make it easier to track small movements
     new_pos = regions.copy()
     for i, (r, c, win_size) in enumerate(regions):
-        offset = int(math.floor(win_size/2) + win_size / 2)
-        region0 = curr[r-offset:r+offset+1, c-offset:c+offset+1]
-        region1 = next[r-offset:r+offset+1, c-offset:c+offset+1]
-        if region0.size >= win_size ** 2 and region1.size >= win_size ** 2:
-            flow_res = flow(region0, region1)
-            # flow is none if we can't invert a mat
-            if flow_res:
-                f, mag = flow_res
-                f_upscale = f / scale
-                # scale the r, c  up to the original size
-                r_upscale = r / scale
-                c_upscale = c / scale
-                # add the flow vector to the prev r,c to find the updated pos.
-                new_point = (int(np.ceil(r+f[0])),
-                             int(np.ceil(c+f[1])))
-                new_point_upscale = (int(np.ceil(r_upscale+f_upscale[0])),
-                                     int(np.ceil(c_upscale+f_upscale[1])))
-                if new_point[0] < curr.shape[0] and new_point[0] >= 0 \
-                        and new_point[1] < curr.shape[1] and new_point[1] >= 0:
-                    # update position for the region
-                    new_pos[i] = (*new_point_upscale, win_size)
+        # find the region around the point + a border
+        offset = int(math.round(win_size/2 + win_size / 2))
+        region0 = curr_frame[r-offset:r+offset+1, c-offset:c+offset+1]
+        region1 = next_frame[r-offset:r+offset+1, c-offset:c+offset+1]
+        # calculate flow for the scaled down region
+        flow_res = flow(downscale(region0, tracking_scale),
+                        downscale(region1, tracking_scale))
+        # flow is none if we can't invert a mat
+        if flow_res:
+            f, mag = flow_res
+            f_upscale = f / tracking_scale
+            # add the scaled flow vector to the current r,c to find the updated pos. in the
+            # original scale image
+            new_point = (int(math.round(r+f_upscale[0])),
+                         int(math.round(c+f_upscale[1])))
+            # make sure the new point is actually inside the image
+            if new_point[0] < curr_frame.shape[0] and new_point[0] >= 0 \
+                    and new_point[1] < curr_frame.shape[1] and new_point[1] >= 0:
+                # update position for the region
+                new_pos[i] = new_point
     return new_pos
 
 
