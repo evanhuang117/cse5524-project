@@ -2,17 +2,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 import scipy
+import scipy.ndimage
 import math
 
 
 class Tracker:
-    def __init__(self, input_video, threshold=0.05, region_size=9, rescale=0.5):
+    def __init__(self, input_video, threshold=0.05, region_size=9, scale=0.5):
         self.input = input_video
         self.region_size = region_size
-        self.rescale = rescale
+        self.scale = scale
+        self.curr_frame = None
         self.update_frames()
         self.feature_points = self.gen_feature_points(threshold)
-        plt.imshow(self.curr_frame, cmap='gray')
+        plt.imshow(self.curr_frame_scaled, cmap='gray')
         plt.scatter(self.feature_points[:, 1],
                     self.feature_points[:, 0], s=1, c='r')
         plt.show()
@@ -25,8 +27,8 @@ class Tracker:
 
     def next(self):
         if self.update_frames():
-            curr = self.curr_frame
-            next = self.next_frame
+            curr = self.curr_frame_scaled
+            next = self.next_frame_scaled
 
             # 4d vectors : r, c, u, v
             # flows = self.feature_points.copy()
@@ -44,13 +46,20 @@ class Tracker:
                     # flow is none if we can't invert a mat
                     if flow_res:
                         f, mag = flow_res
+                        f_upscale = f / self.scale
+                        # scale the r, c  up to the original size
+                        r_upscale = r / self.scale
+                        c_upscale = c / self.scale
                         # add the flow vector to the prev r,c to find the updated pos.
                         new_point = (int(np.ceil(r+f[0])),
                                      int(np.ceil(c+f[1])))
+                        new_point_upscale = (int(np.ceil(r_upscale+f_upscale[0])),
+                                             int(np.ceil(c_upscale+f_upscale[1])))
                         if new_point[0] < curr.shape[0] and new_point[0] >= 0 \
                                 and new_point[1] < curr.shape[1] and new_point[1] >= 0:
                             # add updated r, c and flow vector to array of all flows
-                            flows[i] = np.array([r, c, f[0], f[1]])
+                            flows[i] = np.array(
+                                [r_upscale, c_upscale, f_upscale[0], f_upscale[1]])
                             self.feature_points[i] = new_point
             return flows
         raise StopIteration()
@@ -61,32 +70,43 @@ class Tracker:
             frame to the grayscale frames, scaled according to self.rescale
             returns false when the last frame has been read
         """
-        # for some reason uint8 breaks everything so need to divide
-        _, self.curr_frame = self.input.read()
-        self.curr_frame = cv2.cvtColor(
-            self.curr_frame, cv2.COLOR_BGR2GRAY) / 255
-         # rescale the image to make it easier to detect smaller movements
-        width = int(self.curr_frame.shape[1] * self.rescale)
-        height = int(self.curr_frame.shape[0] * self.rescale)
-        dim = (width, height)
+        if self.curr_frame is None:
+            # for some reason uint8 breaks everything so need to divide
+            _, self.curr_frame = self.input.read()
+            self.curr_frame = cv2.cvtColor(
+                self.curr_frame, cv2.COLOR_BGR2GRAY) / 255
+            # rescale the image to make it easier to detect smaller movements
+            width = int(self.curr_frame.shape[1] * self.scale)
+            height = int(self.curr_frame.shape[0] * self.scale)
+            dim = (width, height)
+            self.curr_frame_scaled = cv2.resize(
+                self.curr_frame, dim, interpolation=cv2.INTER_AREA)
 
-        self.curr_frame = cv2.resize(
-            self.curr_frame, dim, interpolation=cv2.INTER_AREA)
+            successful_read, self.next_frame = self.input.read()
+            self.next_frame = cv2.cvtColor(
+                self.next_frame, cv2.COLOR_BGR2GRAY) / 255
+            self.next_frame_scaled = cv2.resize(
+                self.next_frame, dim, interpolation=cv2.INTER_AREA)
+        else:
+            width = int(self.curr_frame.shape[1] * self.scale)
+            height = int(self.curr_frame.shape[0] * self.scale)
+            dim = (width, height)
+            self.curr_frame = self.next_frame
+            self.curr_frame_scaled = self.next_frame_scaled
+            successful_read, self.next_frame = self.input.read()
+            self.next_frame = cv2.cvtColor(
+                self.next_frame, cv2.COLOR_BGR2GRAY) / 255
+            self.next_frame_scaled = cv2.resize(
+                self.next_frame, dim, interpolation=cv2.INTER_AREA)
 
-        successful_read, self.next_frame = self.input.read()
-        self.next_frame = cv2.cvtColor(
-            self.next_frame, cv2.COLOR_BGR2GRAY) / 255
-        self.next_frame = cv2.resize(
-            self.next_frame, dim, interpolation=cv2.INTER_AREA)
         return successful_read
-
 
     def gen_feature_points(self, threshold):
         """
         find features to track based off first 2 frames using mei
         filters out the points so that there's only one per region of size region_size
         """
-        mei = np.abs(self.next_frame - self.curr_frame)
+        mei = np.abs(self.next_frame_scaled - self.curr_frame_scaled)
         mei = mei > threshold
         mei = scipy.ndimage.binary_opening(mei)
         mei = scipy.ndimage.binary_closing(mei)
