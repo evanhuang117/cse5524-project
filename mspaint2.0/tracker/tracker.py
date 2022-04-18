@@ -65,11 +65,10 @@ def track_regions(curr_frame, next_frame, regions, tracking_scale=0.5):
             # original scale image
             new_r = int(round(r+f_upscale[0]))
             new_c = int(round(c+f_upscale[1]))
-            # make sure the new point is actually inside the image
-            if new_r < curr_frame.shape[0] and new_r >= 0 \
-                    and new_c < curr_frame.shape[1] and new_c >= 0:
-                # update position for the region
-                new_regions[i] = (new_r, new_c, win_size)
+            # clip the point to the edges if its outside the bounds
+            new_r = min(new_r, curr_frame.shape[0])
+            new_c = min(new_c, curr_frame.shape[1])
+            new_regions[i] = (new_r, new_c, win_size)
     return new_regions
 
 
