@@ -55,20 +55,21 @@ def track_regions(curr_frame, next_frame, regions, tracking_scale=0.5):
         region0 = curr_frame[r-offset:r+offset+1, c-offset:c+offset+1]
         region1 = next_frame[r-offset:r+offset+1, c-offset:c+offset+1]
         # calculate flow for the scaled down region
-        flow_res = flow(downscale(region0, tracking_scale),
-                        downscale(region1, tracking_scale))
-        # flow is none if we can't invert a mat
-        if flow_res:
-            f, mag = flow_res
-            f_upscale = f / tracking_scale
-            # add the scaled flow vector to the current r,c to find the updated pos. in the
-            # original scale image
-            new_r = int(round(r+f_upscale[0]))
-            new_c = int(round(c+f_upscale[1]))
-            # clip the point to the edges if its outside the bounds
-            new_r = min(new_r, curr_frame.shape[0])
-            new_c = min(new_c, curr_frame.shape[1])
-            new_regions[i] = (new_r, new_c, win_size)
+        if region0.size >= win_size ** 2 and region1.size >= win_size ** 2:
+            flow_res = flow(downscale(region0, tracking_scale),
+                            downscale(region1, tracking_scale))
+            # flow is none if we can't invert a mat
+            if flow_res:
+                f, mag = flow_res
+                f_upscale = f / tracking_scale
+                # add the scaled flow vector to the current r,c to find the updated pos. in the
+                # original scale image
+                new_r = int(round(r+f_upscale[0]))
+                new_c = int(round(c+f_upscale[1]))
+                # clip the point to the edges if its outside the bounds
+                new_r = min(new_r, curr_frame.shape[0])
+                new_c = min(new_c, curr_frame.shape[1])
+                new_regions[i] = (new_r, new_c, win_size)
     return new_regions
 
 
