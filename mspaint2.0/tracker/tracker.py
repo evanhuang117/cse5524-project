@@ -48,7 +48,7 @@ def track_regions(curr_frame, next_frame, regions, tracking_scale=0.5):
         next_frame = cv2.cvtColor(next_frame, cv2.COLOR_BGR2GRAY)
 
     # downscale images to make it easier to track small movements
-    new_pos = regions.copy()
+    new_regions = regions.copy()
     for i, (r, c, win_size) in enumerate(regions):
         # find the region around the point + a border
         offset = int(round(win_size/2 + win_size / 2))
@@ -69,8 +69,8 @@ def track_regions(curr_frame, next_frame, regions, tracking_scale=0.5):
             if new_point[0] < curr_frame.shape[0] and new_point[0] >= 0 \
                     and new_point[1] < curr_frame.shape[1] and new_point[1] >= 0:
                 # update position for the region
-                new_pos[i] = new_point
-    return new_pos
+                new_regions[i] = (*new_point, win_size)
+    return new_regions
 
 
 class Tracker:
