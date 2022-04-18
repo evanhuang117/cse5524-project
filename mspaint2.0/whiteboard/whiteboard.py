@@ -47,7 +47,7 @@ class Whiteboard:
         arr = []
         # for x in range(len(videodata)): # for each image
         temp = np.pad(videodata, ((0, 233), (0, 0)), 'constant')
-        temp = Gaussianblurredx = cv2.GaussianBlur(temp, (5, 5), 1)
+        temp = cv2.GaussianBlur(temp, (35, 35), 1)
         # (plt.imshow( temp))
         # plt.show()
         #blur = cv2.GaussianBlur(temp,(3, 3), 3)
@@ -55,7 +55,7 @@ class Whiteboard:
         # image_first_derivative = laplace(temp) # first derivative of image
         # image_first_derivative2 = laplace(temp) # second derivative of an image
         # image_first_derivative = gaussian_filter(videodata,sigma=1,order=[1,0],output=np.float64, mode='nearest') # first derivative of image
-
+  
         # image_first_derivative2 = gaussian_filter(videodata,sigma=1,order=[0,1],output=np.float64, mode='nearest')
         Gx = np.array([[-1, 0, 1],
                        [-2, 0, 2],
@@ -79,17 +79,16 @@ class Whiteboard:
         Gaussianblurredy = cv2.GaussianBlur(Gy2, (5, 5), cv2.BORDER_CONSTANT)
         Gaussianblurredxy = cv2.GaussianBlur(GxGy, (5, 5), cv2.BORDER_CONSTANT)
         addedm = Gaussianblurredx+Gaussianblurredy
-        R = (Gaussianblurredx @ Gaussianblurredy) - \
-            (Gaussianblurredxy@Gaussianblurredxy) - (0.05*(addedm @ addedm))
+        R = (Gaussianblurredx @ Gaussianblurredy) - (Gaussianblurredxy@Gaussianblurredxy) - (0.05*(addedm @ addedm))
         R = R*-1
 
         threshold = R > 10e7
         self.r = R
         #threshold = R>7
-        (plt.imshow(threshold))
-        plt.show()
+        # (plt.imshow(threshold))
+    
         arr.append(R)
-        plt.imshow(R)
-
+        # plt.imshow(R)
+        plt.show()
         # return arr
         return R

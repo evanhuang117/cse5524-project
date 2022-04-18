@@ -89,23 +89,7 @@ while(vid.isOpened()):
       
 
 
-# for x in range(len(vid)): # for each image 
-#         temp = vid[x].astype("uint8")
-#         temp = np.pad(vid[x], ((0,840),(0,0)), 'constant') 
-#         blur = cv2.GaussianBlur(temp,(3, 3), 3)
-#         image_first_derivative = gaussian_filter(temp,sigma=1,order=[1,0],output=np.float64, mode='nearest') # first derivative of image
-#         image_first_derivative2 = gaussian_filter(temp,sigma=1,order=[0,1],output=np.float64, mode='nearest')
-#         thresh1 = image_first_derivative >2;
-#         thresh2 = image_first_derivative2 >2;
-#         # magnitude=np.sqrt(thresh1**2+thresh2**2)
-#         # print(thresh1)
-#         # (plt.imshow( thresh1))
-#         # plt.show()
-#         # for y in range(len(thresh1)):
-#         #     for x1 in range(len(thresh1[y])):
-#         #         math,atan()
-#         (thresh, im_bw) = cv2.threshold(blur, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
-#         cv2.imshow('threshold',thresh)
+
                 
       
         
