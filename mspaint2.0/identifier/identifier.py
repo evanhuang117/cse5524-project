@@ -24,6 +24,8 @@ def get_fingertip(image, test=False):
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
+    print(finger_tip_coords)
+    return finger_tip_coords
 
 
 def find_point(image, sides):
@@ -31,44 +33,44 @@ def find_point(image, sides):
 
     height, width = image.shape[:2]
     top, bottom, left, right = sides[0], sides[1], sides[2], sides[3]
-    finger_height = -1
-    finger_width = -1
+    finger_height = -25
+    finger_width = -25
 
-    if sum(sides) == 1:
+    if sum(sides) >= 1:
         # test cardinal directions
 
         if bottom:
             # search from top
             for i in range(height):
                 row = image[i]
-                if 0 in row:
+                if 255 in row:
                     finger_height = i
-                    finger_width = np.median(np.where(row == 0))
+                    finger_width = np.median(np.where(row == 255))
                     break
             
         elif left:
             # search from right
             for i in range(width - 1, 0, -1):
                 col = image[:,i]
-                if 0 in col:
-                    finger_height = np.median(np.where(col == 0))
+                if 255 in col:
+                    finger_height = np.median(np.where(col == 255))
                     finger_width = i
                     break
         elif right:
             # search from left
                 for i in range(width):
                     col = image[:,i]
-                    if 0 in col:
-                        finger_height = np.median(np.where(col == 0))
+                    if 255 in col:
+                        finger_height = np.median(np.where(col == 255))
                         finger_width = i
                         break
         elif top:
             # search from bottom
                 for i in range(height - 1, 0, -1 ):
                     row = image[i]
-                    if 0 in row:
+                    if 255 in row:
                         finger_height = i
-                        finger_width = np.median(np.where(row == 0))
+                        finger_width = np.median(np.where(row == 255))
                         break
 
 
@@ -129,24 +131,25 @@ def incoming_side(image, MIN_COUNT=15):
 
     for i in range(width):
     
-        if image[top_row, i] == 0:
+        if image[top_row, i] == 255:
             sides["top"].append((top_row, i))
 
-        if image[bottom_row, i] == 0:
+        if image[bottom_row, i] == 255:
             sides["bottom"].append((bottom_row, i))
 
 
     for i in range(height):
         
-        if image[i, left_col] == 0:
+        if image[i, left_col] == 255:
             sides["left"].append((i, left_col))
 
-        if image[i, right_col] == 0:
+        if image[i, right_col] == 255:
             sides["right"].append((i, right_col))
 
 
     points_from = [len(sides["top"]) > MIN_COUNT, len(sides["bottom"]) > MIN_COUNT, len(sides["left"]) > MIN_COUNT, len(sides["right"]) > MIN_COUNT]
-                
+    print(points_from)
+
     return points_from
 
 
