@@ -24,17 +24,48 @@ def get_fingertip(image, test=False):
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
-    print(finger_tip_coords)
+    #print(finger_tip_coords)
     return finger_tip_coords
 
 
-def find_point(image, sides):
 
 
+
+def secondary_check(image, sides):
+
+    # constant for finger width
+    finger_offset = 40
     height, width = image.shape[:2]
     top, bottom, left, right = sides[0], sides[1], sides[2], sides[3]
     finger_height = -25
     finger_width = -25
+
+
+    if sum(sides) >= 1:
+
+        if bottom:
+            
+            for i in range(height):
+                row = image[i]
+                if 255 in row:
+                    finger_height = i
+                    finger_width = np.median(np.where(row == 255))
+                    return (int(finger_width), int(finger_height))
+
+
+def find_point(image, sides):
+
+    # constant for finger width
+    finger_offset = 120
+    check_constant = 20
+    height, width = image.shape[:2]
+    top, bottom, left, right = sides[0], sides[1], sides[2], sides[3]
+    finger_height = -25
+    finger_width = -25
+
+    fingers = 0
+
+    coords = []
 
     if sum(sides) >= 1:
         # test cardinal directions
@@ -45,7 +76,34 @@ def find_point(image, sides):
                 row = image[i]
                 if 255 in row:
                     finger_height = i
-                    finger_width = np.median(np.where(row == 255))
+                    finger_width = int(np.median(np.where(row == 255)))
+
+                    left_check = finger_width - finger_offset
+
+                    coords.append((int(finger_width), int(finger_height)))
+
+                    if left_check > finger_offset and height > 2 * finger_offset:
+                        check_im = image[finger_height:finger_height + finger_offset, left_check - finger_offset:left_check]
+                        other_coords = secondary_check(check_im, sides)
+                        if other_coords is not None:
+                            new_coords = (other_coords[0] + (left_check - finger_offset), other_coords[1] + finger_height)
+                            print(f"left fingertip: {new_coords}")
+
+                            coords.append(new_coords)
+
+                    right_check = finger_width + finger_offset
+                    if right_check < width - check_constant and height > 2 * finger_offset:
+                        check_im = image[finger_height:finger_height + finger_offset, right_check: right_check + finger_offset]
+                        other_coords = secondary_check(check_im, sides)
+
+                        if other_coords is not None:
+                            new_coords = (other_coords[0] + right_check, other_coords[1] + finger_height)
+                            #print(f"right fingertip: {new_coords}")
+                            coords.append(new_coords)
+                        
+
+
+                    #print(f"All: {coords}")
                     break
             
         elif left:
@@ -55,6 +113,7 @@ def find_point(image, sides):
                 if 255 in col:
                     finger_height = np.median(np.where(col == 255))
                     finger_width = i
+                    coords.append((int(finger_width), int(finger_height)))
                     break
         elif right:
             # search from left
@@ -63,6 +122,7 @@ def find_point(image, sides):
                     if 255 in col:
                         finger_height = np.median(np.where(col == 255))
                         finger_width = i
+                        coords.append((int(finger_width), int(finger_height)))
                         break
         elif top:
             # search from bottom
@@ -71,6 +131,7 @@ def find_point(image, sides):
                     if 255 in row:
                         finger_height = i
                         finger_width = np.median(np.where(row == 255))
+                        coords.append((int(finger_width), int(finger_height)))
                         break
 
 
@@ -95,9 +156,10 @@ def find_point(image, sides):
 
 
 
-
-
-    return (int(finger_width), int(finger_height))
+    final = [x for x in coords if x is not None]
+    
+    return final
+    #return (int(finger_width), int(finger_height))
 
 
 
@@ -148,7 +210,7 @@ def incoming_side(image, MIN_COUNT=15):
 
 
     points_from = [len(sides["top"]) > MIN_COUNT, len(sides["bottom"]) > MIN_COUNT, len(sides["left"]) > MIN_COUNT, len(sides["right"]) > MIN_COUNT]
-    print(points_from)
+    #print(points_from)
 
     return points_from
 
