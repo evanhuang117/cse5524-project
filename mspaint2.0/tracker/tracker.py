@@ -51,7 +51,7 @@ def track_regions(curr_frame, next_frame, regions, tracking_scale=0.5):
     new_regions = regions.copy()
     for i, (r, c, win_size) in enumerate(regions):
         # find the region around the point + a border
-        offset = int(round(win_size/2 + win_size / 2))
+        offset = int(round(win_size/2))
         region0 = curr_frame[r-offset:r+offset+1, c-offset:c+offset+1]
         region1 = next_frame[r-offset:r+offset+1, c-offset:c+offset+1]
         # calculate flow for the scaled down region
@@ -62,13 +62,20 @@ def track_regions(curr_frame, next_frame, regions, tracking_scale=0.5):
             if flow_res:
                 f, mag = flow_res
                 f_upscale = f / tracking_scale
+                print(f_upscale[1] < 0)
                 # add the scaled flow vector to the current r,c to find the updated pos. in the
                 # original scale image
                 new_r = int(round(r+f_upscale[0]))
                 new_c = int(round(c+f_upscale[1]))
                 # clip the point to the edges if its outside the bounds
-                new_r = min(new_r, curr_frame.shape[0])
-                new_c = min(new_c, curr_frame.shape[1])
+                if new_r > curr_frame.shape[0]:
+                    new_r = curr_frame.shape[0]
+                if new_r < 0:
+                    new_r = 0
+                if new_c > curr_frame.shape[1]:
+                    new_c = curr_frame.shape[1]
+                if new_c < 0:
+                    new_c = 0
                 new_regions[i] = (new_r, new_c, win_size)
     return new_regions
 
