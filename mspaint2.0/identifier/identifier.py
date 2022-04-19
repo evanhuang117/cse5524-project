@@ -24,7 +24,7 @@ def get_fingertip(image, test=False):
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
-    #print(finger_tip_coords)
+    
     return finger_tip_coords
 
 
@@ -56,7 +56,7 @@ def secondary_check(image, sides):
 def find_point(image, sides):
 
     # constant for finger width
-    finger_offset = 120
+    finger_offset = 60
     check_constant = 20
     height, width = image.shape[:2]
     top, bottom, left, right = sides[0], sides[1], sides[2], sides[3]
@@ -87,7 +87,7 @@ def find_point(image, sides):
                         other_coords = secondary_check(check_im, sides)
                         if other_coords is not None:
                             new_coords = (other_coords[0] + (left_check - finger_offset), other_coords[1] + finger_height)
-                            print(f"left fingertip: {new_coords}")
+                            #print(f"left fingertip: {new_coords}")
 
                             coords.append(new_coords)
 
@@ -135,27 +135,6 @@ def find_point(image, sides):
                         break
 
 
-        
-
-    elif sum(sides) == 2:
-        # harder case check diaganol
-
-        if bottom and right:
-            # search from top left
-            pass
-
-        elif bottom and left:
-            # search from top right
-            pass
-        elif top and right:
-            # search from bottom left
-            pass
-        elif top and left:
-            # search from bottom right
-            pass
-
-
-
     final = [x for x in coords if x is not None]
     
     return final
@@ -165,9 +144,9 @@ def find_point(image, sides):
 
 
 """
-Take in a binary image where white is background and black is subject
+Take in a binary image where white is subject and black is background
 
-kwarg MIN_COUNT is minimum ount required to say arm comes from a side
+MIN_COUNT is minimum count required to say arm comes from a side
 Used in noisy environments
 
 return approx direction finger is pointing
@@ -179,8 +158,6 @@ def incoming_side(image, MIN_COUNT=15):
      # minimum pixels on a side to have it count
     height, width = image.shape[:2]
     sides = {"top": [], "bottom": [], "left": [], "right": []}
-
-    
 
     # prepare constants to traverse boundary
     top_row = 0
@@ -210,8 +187,7 @@ def incoming_side(image, MIN_COUNT=15):
 
 
     points_from = [len(sides["top"]) > MIN_COUNT, len(sides["bottom"]) > MIN_COUNT, len(sides["left"]) > MIN_COUNT, len(sides["right"]) > MIN_COUNT]
-    #print(points_from)
-
+    
     return points_from
 
 
