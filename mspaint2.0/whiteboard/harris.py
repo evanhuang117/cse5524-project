@@ -78,3 +78,30 @@ class Harris:
                         suppress.append((c+max_c, r+max_r))
                         
         return suppress
+
+imgGray = color.rgb2gray(cv2.imread('C:\\Users\\Jaiydev Gupta\\Documents\\5524 project\\cse5524-project\\data\\angle_left.png')) # please be midful of where you are getting the image from
+#imgGray = color.rgb2gray(img)
+print(imgGray.shape)
+interestpoints = Harris(imgGray)
+
+# plt.figure(figsize=(10, 5))
+# plt.subplot(1, 2, 1)
+plt.imshow(interestpoints.R)
+plt.show()
+# plt.gca().set_title('raw R', c='r')
+
+# plt.subplot(1, 2, 2)
+thresh = interestpoints.thresh
+plt.imshow(thresh)
+
+
+# plt.gca().set_title('thresholded', c='r')
+
+# plt.suptitle('Harris')
+plt.show()
+
+plt.figure(figsize=(5, 5))
+plt.gca().imshow(imgGray, cmap='gray')
+plt.gca().scatter(*zip(*interestpoints.suppressed), s=1, c='r')
+plt.title('suppressed overlay')
+plt.show()

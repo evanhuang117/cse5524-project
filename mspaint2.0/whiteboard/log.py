@@ -11,6 +11,7 @@ from PIL import Image
 from skimage import color
 from skimage import io
 from scipy import ndimage, misc
+from harris import Harris
 
 class Log:
     def __init__(self, frame):
@@ -28,29 +29,17 @@ class Log:
         point9 = log2[y+1][x-1]
         a= [point1,point2,point3,point4,point5,point6,point7,point8,point9]
         return max(a)
-    
-    def sigmaMaximizer(self,frame):
-        sigma = 10
-        #  ndimage.gaussian_laplace(threshold, sigma=1)
-        ## octave 1
         
-        # level1 = cv2.GaussianBlur(threshold, (3,3), sigma)
-        # level2 = cv2.GaussianBlur(level1, (3,3), sigma)
-        # level3 = cv2.GaussianBlur(level2, (3,3), sigma)
-        # level4 = cv2.GaussianBlur(level3, (3,3), sigma)
-        log1 = ndimage.gaussian_laplace(frame, sigma=10*1.2**0)
-        tup1 = (log1,sigma)
-        log2 = ndimage.gaussian_laplace(frame, sigma=10*1.2**1)
-        tup2 = (log2,sigma**2)
-        log3 = ndimage.gaussian_laplace(frame, sigma=10*1.2**2)
+    def sigmaMaximizer(self,frame):
+        sig = 10
+        k = 1.1
+      
+        log1 = ndimage.gaussian_laplace(frame, sigma=sig*k**0)
+        
+        log2 = ndimage.gaussian_laplace(frame, sigma=sig*k**1)
+        
+        log3 = ndimage.gaussian_laplace(frame, sigma=sig*k**2)
 
-
-
-
-
-
-        l,w = log2.shape    
-        octave0 = []
         arr = []
         
         for y in range(1,len(log2)-1):
@@ -62,28 +51,45 @@ class Log:
                 maxi = 0
                 tempo = 0
                 
+                
                 if log2Max >= log1Max:
-                    store = ((y,x,log2Max,10*1.2**0))
+                    store = ((y,x,log2Max,sig*k**1))
                     tempo = 10*1.2**1
                     maxi = log2Max
                 else:
-                    store = ((y,x,log1Max,10*1.2**1))
-                    tempo = 10*1.2**0
+                    store = ((y,x,log1Max,sig*k**0))
+                    tempo = sig*k**0
                     maxi = log1Max
                     
                 if log3Max >= maxi:
-                    store = ((y,x,log3Max,10*1.2**2))
+                    store = ((y,x,log3Max,sig*k**3))
                     maxi = log3Max
                 else:
                     store = (y,x,maxi,tempo)
                 
-                    
-                if(maxi>1e-10):
-                
+                if( maxi > 0.0 and maxi <1e-10) :
+            
                     arr.append(store)
-                # log2Max = max(log2Max,findMax(log1,y,x))
-                # log2Max = max(log2Max,findMax(log3,y,x))
+
                 
-                
+        # print(len(arr))        
         return arr
     
+store2 = np.zeros((2017,2017))
+imgGray = color.rgb2gray(cv2.imread('C:\\Users\\Jaiydev Gupta\\Documents\\5524 project\\cse5524-project\\data\\angle_left.png')) # please be midful of where you are getting the image from
+imgGray = np.pad(imgGray, ((0, np.max(imgGray.shape) - np.min(imgGray.shape)), (0, 0)), 'constant')
+#imgGray = color.rgb2gray(img)
+print(imgGray.shape)
+interestpoints = Harris(imgGray)
+suppress = interestpoints.suppressed
+for x in range (len(interestpoints.suppressed)):
+    store2[suppress[x][0]][suppress[x][1]] = imgGray[suppress[x][0]][suppress[x][1]]
+    
+        
+laplaOfGauss = Log(store2)
+store = laplaOfGauss.arr
+print(store)
+(plt.imshow( imgGray))
+for x in store:
+    plt.plot(x[1], x[0], marker="o", markersize=round(x[3]), markeredgecolor="red" )
+plt.show()
