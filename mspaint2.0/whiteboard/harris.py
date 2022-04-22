@@ -79,7 +79,7 @@ class Harris:
                         
         return suppress
 
-imgGray = color.rgb2gray(cv2.imread('C:\\Users\\Jaiydev Gupta\\Documents\\5524 project\\cse5524-project\\data\\angle_left.png')) # please be midful of where you are getting the image from
+imgGray = color.rgb2gray(cv2.imread('C:\\Users\\Jaiydev Gupta\\Documents\\5524 project\\cse5524-project\\mspaint2.0\\whiteboard\\angle_left.png')) # please be midful of where you are getting the image from
 #imgGray = color.rgb2gray(img)
 print(imgGray.shape)
 interestpoints = Harris(imgGray)

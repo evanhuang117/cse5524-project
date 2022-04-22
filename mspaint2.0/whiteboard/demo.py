@@ -16,7 +16,8 @@ import math
 
 
 
-vid = cv2.VideoCapture("C:\\Users\\Jaiydev Gupta\\Documents\\5524 project\\cse5524-project\\data\\up_move_right_Trim_little.mp4") # please be midful of where you are getting the image from
+vid = cv2.VideoCapture("C:\\Users\\Jaiydev Gupta\\Documents\\5524 project\\cse5524-project\\mspaint2.0\\whiteboard\\up_move_right_Trim_little.mp4") # I had to copy the full path for some reason 
+
 
 if (vid.isOpened()== False): 
   print("Error opening video stream or file")

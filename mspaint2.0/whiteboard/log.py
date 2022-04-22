@@ -76,7 +76,7 @@ class Log:
         return arr
     
 store2 = np.zeros((2017,2017))
-imgGray = color.rgb2gray(cv2.imread('C:\\Users\\Jaiydev Gupta\\Documents\\5524 project\\cse5524-project\\data\\angle_left.png')) # please be midful of where you are getting the image from
+imgGray = color.rgb2gray(cv2.imread('C:\\Users\\Jaiydev Gupta\\Documents\\5524 project\\cse5524-project\\mspaint2.0\\whiteboard\\angle_left.png')) # please be midful of where you are getting the image from
 imgGray = np.pad(imgGray, ((0, np.max(imgGray.shape) - np.min(imgGray.shape)), (0, 0)), 'constant')
 #imgGray = color.rgb2gray(img)
 print(imgGray.shape)
