@@ -13,6 +13,9 @@ from skimage import io
 from scipy import ndimage, misc
 from harris import Harris
 
+
+# kindly just run the python file, all you need to do is change the path at the bottom of the script 
+
 class Log:
     def __init__(self, frame):
         self.arr = self.sigmaMaximizer(frame)
@@ -74,9 +77,11 @@ class Log:
                 
         # print(len(arr))        
         return arr
-    
+
+
+# I had to copy the full path for some reason for my images so kindly use a path that will work with you.     
 store2 = np.zeros((2017,2017))
-imgGray = color.rgb2gray(cv2.imread('C:\\Users\\Jaiydev Gupta\\Documents\\5524 project\\cse5524-project\\mspaint2.0\\whiteboard\\angle_left.png')) # please be midful of where you are getting the image from
+imgGray = color.rgb2gray(cv2.imread('C:\\Users\\Jaiydev Gupta\\Documents\\5524 project\\cse5524-project\\mspaint2.0\\whiteboard\\angle_left.png')) 
 imgGray = np.pad(imgGray, ((0, np.max(imgGray.shape) - np.min(imgGray.shape)), (0, 0)), 'constant')
 #imgGray = color.rgb2gray(img)
 print(imgGray.shape)
@@ -86,7 +91,7 @@ for x in range (len(interestpoints.suppressed)):
     store2[suppress[x][0]][suppress[x][1]] = imgGray[suppress[x][0]][suppress[x][1]]
     
         
-laplaOfGauss = Log(store2)
+laplaOfGauss = Log(store2) # the log takes about a min to run 
 store = laplaOfGauss.arr
 print(store)
 (plt.imshow( imgGray))

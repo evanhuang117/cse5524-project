@@ -15,9 +15,10 @@ import math
 
 
 
+# kindly just run the python file, all you need to do is change the path  of  the video down below 
 
-vid = cv2.VideoCapture("C:\\Users\\Jaiydev Gupta\\Documents\\5524 project\\cse5524-project\\mspaint2.0\\whiteboard\\up_move_right_Trim_little.mp4") # I had to copy the full path for some reason 
 
+vid = cv2.VideoCapture("C:\\Users\\Jaiydev Gupta\\Documents\\5524 project\\cse5524-project\\mspaint2.0\\whiteboard\\up_move_right_Trim_little.mp4") 
 
 if (vid.isOpened()== False): 
   print("Error opening video stream or file")
